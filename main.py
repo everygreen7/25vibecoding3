@@ -1,42 +1,78 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.io as pio
+import os
 
-# Load the data
-@st.cache_data
-def load_data():
-    df_total = pd.read_csv("남여합계.csv", encoding="cp949")
-    df_gender = pd.read_csv("남여구분.csv", encoding="cp949")
-    return df_total, df_gender
+# Set default Plotly template for better aesthetics
+pio.templates.default = "plotly_white"
 
-df_total, df_gender = load_data()
+st.set_page_config(layout="wide") # Use wide layout for better visualization
 
-# Select administrative district
-districts = df_gender["행정구역"].unique()
-selected_district = st.selectbox("행정구역을 선택하세요", districts)
+st.title('인구 데이터 시각화 웹 앱 📊')
+st.write('제공된 CSV 파일(`남여합계.csv`, `남여구분.csv`)을 기반으로 인구 데이터를 시각화합니다.')
 
-# Filter data
-row = df_gender[df_gender["행정구역"] == selected_district].iloc[0]
+# --- 남여합계.csv 시각화 (Total Male/Female) ---
+st.header('1. 남여 전체 인구 추이 (Total Population Trend)')
 
-# Extract age columns
-male_cols = [col for col in df_gender.columns if "남_" in col and "세" in col]
-female_cols = [col for col in df_gender.columns if "여_" in col and "세" in col]
+if os.path.exists('남여합계.csv'):
+    try:
+        df_total = pd.read_csv('남여합계.csv')
+        st.subheader('남여합계.csv 데이터 미리보기:')
+        st.dataframe(df_total.head())
 
-ages = [col.split("_")[-1].replace("세", "") for col in male_cols]
-male_values = [int(str(row[col]).replace(",", "")) for col in male_cols]
-female_values = [int(str(row[col]).replace(",", "")) for col in female_cols]
+        fig_total = px.line(
+            df_total,
+            x=df_total.columns[0],
+            y=df_total.columns[1],
+            title='남여 전체 인구 추이',
+            labels={
+                df_total.columns[0]: '연도/항목',
+                df_total.columns[1]: '인구수'
+            }
+        )
+        st.plotly_chart(fig_total, use_container_width=True)
 
-df_plot = pd.DataFrame({
-    "연령": ages,
-    "남자": male_values,
-    "여자": female_values
-})
+    except Exception as e:
+        st.error(f"남여합계.csv 시각화 중 오류 발생: {e}")
+        st.info("CSV 파일의 컬럼 이름이나 구조가 예상과 다를 수 있습니다. 파일을 확인해주세요.")
+else:
+    st.warning("경고: '남여합계.csv' 파일을 찾을 수 없습니다. 파일을 앱과 같은 경로에 두세요.")
 
-# Melt for plotting
-df_melted = df_plot.melt(id_vars="연령", var_name="성별", value_name="인구수")
+# --- 남여구분.csv 시각화 (Male/Female Classification) ---
+st.header('2. 남성 및 여성 인구 추이 (Male and Female Population Trend)')
 
-# Plot
-fig = px.bar(df_melted, x="연령", y="인구수", color="성별", barmode="group",
-             title=f"{selected_district} 연령별 남녀 인구 분포")
-st.plotly_chart(fig)
+if os.path.exists('남여구분.csv'):
+    try:
+        df_gender = pd.read_csv('남여구분.csv')
+        st.subheader('남여구분.csv 데이터 미리보기:')
+        st.dataframe(df_gender.head())
+
+        # Create a single plot with both male and female lines for comparison
+        fig_combined_gender = px.line(
+            df_gender,
+            x=df_gender.columns[0],
+            y=[df_gender.columns[1], df_gender.columns[2]],
+            title='남성 및 여성 인구 추이 비교',
+            labels={
+                df_gender.columns[0]: '연도/항목',
+                'value': '인구수',
+                'variable': '성별'
+            }
+        )
+        # Update legend names to Korean
+        new_names = {df_gender.columns[1]: '남성', df_gender.columns[2]: '여성'}
+        fig_combined_gender.for_each_trace(lambda t: t.update(name = new_names[t.name]))
+        fig_combined_gender.update_layout(legend_title_text='성별')
+
+
+        st.plotly_chart(fig_combined_gender, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"남여구분.csv 시각화 중 오류 발생: {e}")
+        st.info("CSV 파일의 컬럼 이름이나 구조가 예상과 다를 수 있습니다. 파일을 확인해주세요.")
+else:
+    st.warning("경고: '남여구분.csv' 파일을 찾을 수 없습니다. 파일을 앱과 같은 경로에 두세요.")
+
+st.markdown("---")
+st.write("데이터 시각화 앱을 이용해 주셔서 감사합니다!")
