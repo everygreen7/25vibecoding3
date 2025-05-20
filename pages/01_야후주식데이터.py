@@ -3,6 +3,21 @@ import yfinance as yf
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
+# 글로벌 시가총액 Top 10 기업 (가정, 티커 기준) - 전역 변수로 이동
+# 실제 시가총액 순위는 변동될 수 있습니다.
+top_10_tickers = {
+    "Apple": "AAPL",
+    "Microsoft": "MSFT",
+    "NVIDIA": "NVDA",
+    "Alphabet (Class A)": "GOOGL",
+    "Amazon": "AMZN",
+    "Meta Platforms": "META",
+    "Tesla": "TSLA",
+    "Eli Lilly and Company": "LLY",
+    "TSMC": "TSM",
+    "Broadcom": "AVGO"
+}
+
 # 주식 데이터를 가져오는 함수
 def get_stock_data(ticker, period="1y"):
     """
@@ -31,25 +46,10 @@ def main():
     지난 1년간 주가 변화를 시각화합니다.
     """)
 
-    # 글로벌 시가총액 Top 10 기업 (가정, 티커 기준)
-    # 실제 시가총액 순위는 변동될 수 있습니다.
-    top_10_tickers = {
-        "Apple": "AAPL",
-        "Microsoft": "MSFT",
-        "NVIDIA": "NVDA",
-        "Alphabet (Class A)": "GOOGL",
-        "Amazon": "AMZN",
-        "Meta Platforms": "META",
-        "Tesla": "TSLA",
-        "Eli Lilly and Company": "LLY",
-        "TSMC": "TSM",
-        "Broadcom": "AVGO"
-    }
-
     # 데이터 로딩 스피너
     with st.spinner("주식 데이터를 불러오는 중... 잠시만 기다려 주세요."):
         all_data = {}
-        for company_name, ticker in top_10_tickers.items():
+        for company_name, ticker in top_10_tickers.items(): # top_10_tickers는 이제 전역 변수
             data = get_stock_data(ticker, period="1y")
             if data is not None:
                 all_data[company_name] = data
@@ -123,13 +123,3 @@ def main():
 # 스크립트가 직접 실행될 때 main 함수 호출
 if __name__ == "__main__":
     main()
-# 데이터 로딩 스피너
-    with st.spinner("주식 데이터를 불러오는 중... 잠시만 기다려 주세요."):
-        all_data = {}
-        for company_name, ticker in top_10_tickers.items():
-            data = get_stock_data(ticker, period="1y")
-            if data is not None:
-                all_data[company_name] = data
-                # 디버깅을 위해 데이터가 제대로 로드되었는지 확인
-                # st.write(f"{company_name} ({ticker}) 데이터 미리보기:")
-                # st.dataframe(data.head()) # 데이터의 상위 5행을 표시
