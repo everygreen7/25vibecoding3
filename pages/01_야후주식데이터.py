@@ -123,3 +123,13 @@ def main():
 # 스크립트가 직접 실행될 때 main 함수 호출
 if __name__ == "__main__":
     main()
+# 데이터 로딩 스피너
+    with st.spinner("주식 데이터를 불러오는 중... 잠시만 기다려 주세요."):
+        all_data = {}
+        for company_name, ticker in top_10_tickers.items():
+            data = get_stock_data(ticker, period="1y")
+            if data is not None:
+                all_data[company_name] = data
+                # 디버깅을 위해 데이터가 제대로 로드되었는지 확인
+                # st.write(f"{company_name} ({ticker}) 데이터 미리보기:")
+                # st.dataframe(data.head()) # 데이터의 상위 5행을 표시
