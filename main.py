@@ -1,78 +1,179 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
-import plotly.io as pio
-import os
+import numpy as np
 
-# Set default Plotly template for better aesthetics
-pio.templates.default = "plotly_white"
+def get_trig_value(func, angle_rad):
+    """주어진 함수와 라디안 각도에 대한 삼각함수 값을 반환합니다."""
+    if func == "sin":
+        return np.sin(angle_rad)
+    elif func == "cos":
+        return np.cos(angle_rad)
+    elif func == "tan":
+        # 탄젠트는 90도, 270도에서 정의되지 않으므로 처리
+        if np.isclose(np.cos(angle_rad), 0):
+            return "정의되지 않음"
+        return np.tan(angle_rad)
+    return None
 
-st.set_page_config(layout="wide") # Use wide layout for better visualization
+def format_value_latex(value):
+    """삼각함수 값을 LaTeX 형식으로 반환합니다."""
+    if isinstance(value, str):
+        return value  # '정의되지 않음'과 같은 문자열은 그대로 반환
+    
+    # 0, 1, -1, 0.5, -0.5와 같은 정수/반정수는 정확히 표시
+    if np.isclose(value, 0):
+        return "$0$"
+    elif np.isclose(value, 1):
+        return "$1$"
+    elif np.isclose(value, -1):
+        return "$-1$"
+    elif np.isclose(value, 0.5):
+        return "$\\frac{1}{2}$"
+    elif np.isclose(value, -0.5):
+        return "$-\\frac{1}{2}$"
+    elif np.isclose(value, np.sqrt(2)/2):
+        return "$\\frac{\\sqrt{2}}{2}$"
+    elif np.isclose(value, -np.sqrt(2)/2):
+        return "$-\\frac{\\sqrt{2}}{2}$"
+    elif np.isclose(value, np.sqrt(3)/2):
+        return "$\\frac{\\sqrt{3}}{2}$"
+    elif np.isclose(value, -np.sqrt(3)/2):
+        return "$-\\frac{\\sqrt{3}}{2}$"
+    elif np.isclose(value, np.sqrt(3)):
+        return "$\\sqrt{3}$"
+    elif np.isclose(value, -np.sqrt(3)):
+        return "$-\\sqrt{3}$"
+    elif np.isclose(value, 1/np.sqrt(3)):
+        return "$\\frac{\\sqrt{3}}{3}$" # 유리화
+    elif np.isclose(value, -1/np.sqrt(3)):
+        return "$-\\frac{\\sqrt{3}}{3}$" # 유리화
+    elif np.isclose(value, np.sqrt(2)):
+        return "$\\sqrt{2}$"
+    elif np.isclose(value, -np.sqrt(2)):
+        return "$-\\sqrt{2}$"
+    
+    # 그 외의 값은 소수점 4째 자리까지 표시
+    return f"${value:.4f}$"
 
-st.title('인구 데이터 시각화 웹 앱 📊')
-st.write('제공된 CSV 파일(`남여합계.csv`, `남여구분.csv`)을 기반으로 인구 데이터를 시각화합니다.')
+st.set_page_config(layout="centered")
 
-# --- 남여합계.csv 시각화 (Total Male/Female) ---
-st.header('1. 남여 전체 인구 추이 (Total Population Trend)')
+st.title("📏 삼각함수 값 확인 앱")
+st.markdown("고등학교 2학년 학생들을 위한 삼각함수 값 확인 도우미입니다.")
 
-if os.path.exists('남여합계.csv'):
-    try:
-        df_total = pd.read_csv('남여합계.csv')
-        st.subheader('남여합계.csv 데이터 미리보기:')
-        st.dataframe(df_total.head())
+st.sidebar.header("설정")
 
-        fig_total = px.line(
-            df_total,
-            x=df_total.columns[0],
-            y=df_total.columns[1],
-            title='남여 전체 인구 추이',
-            labels={
-                df_total.columns[0]: '연도/항목',
-                df_total.columns[1]: '인구수'
-            }
-        )
-        st.plotly_chart(fig_total, use_container_width=True)
+# 1. 삼각함수 선택
+selected_func = st.sidebar.radio(
+    "삼각함수를 선택하세요:",
+    ("sin", "cos", "tan"),
+    index=0,
+    format_func=lambda x: x.upper() # 'sin' -> 'SIN'으로 표시
+)
 
-    except Exception as e:
-        st.error(f"남여합계.csv 시각화 중 오류 발생: {e}")
-        st.info("CSV 파일의 컬럼 이름이나 구조가 예상과 다를 수 있습니다. 파일을 확인해주세요.")
-else:
-    st.warning("경고: '남여합계.csv' 파일을 찾을 수 없습니다. 파일을 앱과 같은 경로에 두세요.")
+# 2. 각도 단위 선택
+angle_unit = st.sidebar.radio(
+    "각도 단위를 선택하세요:",
+    ("도 (Degrees)", "라디안 (Radians)"),
+    index=0
+)
 
-# --- 남여구분.csv 시각화 (Male/Female Classification) ---
-st.header('2. 남성 및 여성 인구 추이 (Male and Female Population Trend)')
+# 3. 각도 선택 (30, 45, 60의 배수)
+# 각도 리스트 생성
+angles_deg = []
+for i in range(0, 13): # 0도부터 360도까지 (0*30, 1*30, ..., 12*30)
+    angles_deg.append(i * 30)
+for i in range(1, 9): # 45도 배수 (45, 90, ..., 360)
+    angles_deg.append(i * 45)
+for i in range(1, 7): # 60도 배수 (60, 120, ..., 360)
+    angles_deg.append(i * 60)
 
-if os.path.exists('남여구분.csv'):
-    try:
-        df_gender = pd.read_csv('남여구분.csv')
-        st.subheader('남여구분.csv 데이터 미리보기:')
-        st.dataframe(df_gender.head())
+angles_deg = sorted(list(set(angles_deg))) # 중복 제거 및 정렬
 
-        # Create a single plot with both male and female lines for comparison
-        fig_combined_gender = px.line(
-            df_gender,
-            x=df_gender.columns[0],
-            y=[df_gender.columns[1], df_gender.columns[2]],
-            title='남성 및 여성 인구 추이 비교',
-            labels={
-                df_gender.columns[0]: '연도/항목',
-                'value': '인구수',
-                'variable': '성별'
-            }
-        )
-        # Update legend names to Korean
-        new_names = {df_gender.columns[1]: '남성', df_gender.columns[2]: '여성'}
-        fig_combined_gender.for_each_trace(lambda t: t.update(name = new_names[t.name]))
-        fig_combined_gender.update_layout(legend_title_text='성별')
+# 0도와 360도를 포함하도록 수정
+if 0 not in angles_deg:
+    angles_deg.insert(0, 0)
+if 360 not in angles_deg:
+    angles_deg.append(360)
 
+angles_deg = sorted(list(set(angles_deg))) # 최종 중복 제거 및 정렬
 
-        st.plotly_chart(fig_combined_gender, use_container_width=True)
+if angle_unit == "도 (Degrees)":
+    selected_angle_deg = st.sidebar.selectbox(
+        "각도를 선택하세요 (도):",
+        angles_deg,
+        index=angles_deg.index(30) if 30 in angles_deg else 0
+    )
+    angle_rad = np.deg2rad(selected_angle_deg)
+    display_angle = f"${selected_angle_deg}°$"
+else: # 라디안 선택 시
+    angles_rad_display = []
+    angle_to_rad = {} # 라디안 값에 해당하는 표시 문자열 매핑
 
-    except Exception as e:
-        st.error(f"남여구분.csv 시각화 중 오류 발생: {e}")
-        st.info("CSV 파일의 컬럼 이름이나 구조가 예상과 다를 수 있습니다. 파일을 확인해주세요.")
-else:
-    st.warning("경고: '남여구분.csv' 파일을 찾을 수 없습니다. 파일을 앱과 같은 경로에 두세요.")
+    # 0부터 2파이까지 30, 45, 60도 배수에 해당하는 라디안 값 생성
+    for angle_d in angles_deg:
+        rad_val = np.deg2rad(angle_d)
+        
+        # 특수 라디안 값에 대한 LaTeX 표현
+        if np.isclose(rad_val, 0):
+            display_str = "$0$"
+        elif np.isclose(rad_val, np.pi/6):
+            display_str = "$\\frac{\\pi}{6}$"
+        elif np.isclose(rad_val, np.pi/4):
+            display_str = "$\\frac{\\pi}{4}$"
+        elif np.isclose(rad_val, np.pi/3):
+            display_str = "$\\frac{\\pi}{3}$"
+        elif np.isclose(rad_val, np.pi/2):
+            display_str = "$\\frac{\\pi}{2}$"
+        elif np.isclose(rad_val, 2*np.pi/3):
+            display_str = "$\\frac{2\\pi}{3}$"
+        elif np.isclose(rad_val, 3*np.pi/4):
+            display_str = "$\\frac{3\\pi}{4}$"
+        elif np.isclose(rad_val, 5*np.pi/6):
+            display_str = "$\\frac{5\\pi}{6}$"
+        elif np.isclose(rad_val, np.pi):
+            display_str = "$\\pi$"
+        elif np.isclose(rad_val, 7*np.pi/6):
+            display_str = "$\\frac{7\\pi}{6}$"
+        elif np.isclose(rad_val, 5*np.pi/4):
+            display_str = "$\\frac{5\\pi}{4}$"
+        elif np.isclose(rad_val, 4*np.pi/3):
+            display_str = "$\\frac{4\\pi}{3}$"
+        elif np.isclose(rad_val, 3*np.pi/2):
+            display_str = "$\\frac{3\\pi}{2}$"
+        elif np.isclose(rad_val, 5*np.pi/3):
+            display_str = "$\\frac{5\\pi}{3}$"
+        elif np.isclose(rad_val, 7*np.pi/4):
+            display_str = "$\\frac{7\\pi}{4}$"
+        elif np.isclose(rad_val, 11*np.pi/6):
+            display_str = "$\\frac{11\\pi}{6}$"
+        elif np.isclose(rad_val, 2*np.pi):
+            display_str = "$2\\pi$"
+        else:
+            display_str = f"${rad_val:.4f} \\text{ rad}$" # 그 외의 경우 소수점 표시
+
+        angles_rad_display.append(display_str)
+        angle_to_rad[display_str] = rad_val
+
+    selected_angle_rad_display = st.sidebar.selectbox(
+        "각도를 선택하세요 (라디안):",
+        angles_rad_display,
+        index=angles_rad_display.index("$\\frac{\\pi}{6}$") if "$\\frac{\\pi}{6}$" in angles_rad_display else 0
+    )
+    angle_rad = angle_to_rad[selected_angle_rad_display]
+    display_angle = selected_angle_rad_display
 
 st.markdown("---")
-st.write("데이터 시각화 앱을 이용해 주셔서 감사합니다!")
+
+st.header("계산 결과")
+
+# 삼각함수 값 계산
+trig_value = get_trig_value(selected_func, angle_rad)
+formatted_trig_value = format_value_latex(trig_value)
+
+# 결과 출력
+st.markdown(f"선택한 삼각함수: $\\large\\text{{{selected_func.upper()}}}$")
+st.markdown(f"선택한 각도: $\\large{display_angle}$")
+st.markdown(f"") # 간격 조절
+st.markdown(f"결과: $\\huge\\text{{{selected_func.upper()}}}(\\large{display_angle}) = {formatted_trig_value}$")
+
+st.markdown("---")
+st.markdown("궁금한 삼각함수 값을 선택하고 각도를 변경하여 확인해보세요!")
