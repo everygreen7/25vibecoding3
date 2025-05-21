@@ -83,7 +83,7 @@ selected_func = st.sidebar.radio(
     "삼각함수를 선택하세요:",
     ("sin", "cos", "tan"),
     index=0,
-    format_func=lambda x: x.upper()
+    # format_func=lambda x: x.upper() # 이 부분을 제거하거나 주석 처리
 )
 
 # 2. 각도 단위 선택
@@ -142,15 +142,15 @@ st.header("계산 결과")
 trig_value = get_trig_value(selected_func, st.session_state.selected_angle_rad)
 formatted_trig_value_latex = format_value_latex(trig_value)
 
-# 결과 출력 - st.latex 사용
-st.markdown(f"선택한 삼각함수: **{selected_func.upper()}**")
+# 결과 출력
+st.markdown(f"선택한 삼각함수: **{selected_func}**") # .upper() 제거
 
 st.markdown(f"선택된 각도: ")
 st.latex(st.session_state.display_angle_latex)
 
 st.markdown(f"") # 간격 조절
 st.markdown("결과:")
-st.latex(rf"\text{{{selected_func.upper()}}}({st.session_state.display_angle_latex}) = {formatted_trig_value_latex}")
+st.latex(rf"\text{{{selected_func}}}({st.session_state.display_angle_latex}) = {formatted_trig_value_latex}") # .upper() 제거
 
 st.markdown("---")
 st.markdown("궁금한 삼각함수 값을 선택하고 각도를 변경하여 확인해보세요!")
