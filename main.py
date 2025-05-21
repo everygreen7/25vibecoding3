@@ -104,44 +104,39 @@ for i in range(1, 7):
 
 angles_deg_values = sorted(list(set(angles_deg_values)))
 
-# --- 세션 상태 초기화 (강화된 부분) ---
-# 앱이 처음 로드되거나 세션 상태가 초기화될 때 항상 실행
+# --- 세션 상태 초기화 ---
 if 'selected_angle_rad' not in st.session_state:
-    # 초기값은 30도 (라디안: pi/6)
     initial_deg = 30
     initial_rad = np.deg2rad(initial_deg)
     
     st.session_state.selected_angle_rad = initial_rad
     st.session_state.deg_for_display = initial_deg
     st.session_state.rad_for_display_latex = get_latex_rad_display(initial_rad)
-    # 초기 각도 단위는 '도 (Degrees)'로 설정하여, 결과 표시 시 '라디안'이 반대로 표시되도록 함
     st.session_state.current_selected_unit = "도 (Degrees)" 
 # --- 세션 상태 초기화 끝 ---
 
 # 각도 버튼 생성
-cols = st.columns(6) # 6개의 열로 버튼 정렬
+# Streamlit의 columns는 컨테이너를 반환하므로, 리스트로 받아서 순회하며 사용합니다.
+num_cols = 6
+cols = st.columns(num_cols) 
 
-current_col_idx = 0
-for deg_val in angles_deg_values:
+for idx, deg_val in enumerate(angles_deg_values):
     rad_val = np.deg2rad(deg_val)
 
-    if angle_unit == "도 (Degrees)":
-        button_label = rf"${deg_val}^\circ$"
+    # 현재 버튼이 들어갈 컬럼 선택
+    with cols[idx % num_cols]: # idx를 num_cols로 나눈 나머지로 컬럼 인덱스를 결정하여 가로로 채웁니다.
+        if angle_unit == "도 (Degrees)":
+            button_label = rf"${deg_val}^\circ$"
+        else: # 라디안 선택 시
+            button_label = rf"${get_latex_rad_display(rad_val)}$"
+        
+        # 버튼을 누르면 세션 상태 업데이트
         if st.button(button_label, key=f"angle_{deg_val}_{angle_unit}"):
             st.session_state.selected_angle_rad = rad_val
             st.session_state.deg_for_display = deg_val
             st.session_state.rad_for_display_latex = get_latex_rad_display(rad_val)
-            st.session_state.current_selected_unit = angle_unit # 현재 선택된 단위 업데이트
-    else: # 라디안 선택 시
-        button_label = rf"${get_latex_rad_display(rad_val)}$"
-        if st.button(button_label, key=f"angle_{deg_val}_{angle_unit}"):
-            st.session_state.selected_angle_rad = rad_val
-            st.session_state.deg_for_display = deg_val
-            st.session_state.rad_for_display_latex = get_latex_rad_display(rad_val)
-            st.session_state.current_selected_unit = angle_unit # 현재 선택된 단위 업데이트
+            st.session_state.current_selected_unit = angle_unit
     
-    current_col_idx = (current_col_idx + 1) % 6 # 다음 열로 이동
-
 st.markdown("---")
 st.header("계산 결과")
 
