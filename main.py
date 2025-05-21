@@ -78,12 +78,15 @@ st.markdown("고등학교 2학년 학생들을 위한 삼각함수 값 확인 �
 
 st.sidebar.header("설정")
 
+# 1. 삼각함수 선택
 selected_func = st.sidebar.radio(
     "삼각함수를 선택하세요:",
     ("sin", "cos", "tan"),
     index=0,
+    format_func=lambda x: x.upper()
 )
 
+# 2. 각도 단위 선택
 angle_unit = st.sidebar.radio(
     "각도 단위를 선택하세요:",
     ("도 (Degrees)", "라디안 (Radians)"),
@@ -104,36 +107,31 @@ for i in range(1, 7):
 
 angles_deg_values = sorted(list(set(angles_deg_values)))
 
-# 세션 상태를 사용하여 선택된 각도 정보 저장
+# 세션 상태를 사용하여 선택된 각도 저장
 if 'selected_angle_rad' not in st.session_state:
-    st.session_state.selected_angle_rad = np.deg2rad(30) # 초기 라디안 값
-    st.session_state.deg_for_display = 30 # 초기 도(Degrees) 표시 값
-    st.session_state.rad_for_display_latex = r"$\frac{\pi}{6}$" # 초기 라디안 LaTeX 표시 값
-    st.session_state.current_selected_unit = "도 (Degrees)" # 현재 선택된 단위
+    st.session_state.selected_angle_rad = np.deg2rad(30) # 초기값 설정 (30도)
+    st.session_state.display_angle_latex = r"30^\circ" # 초기값 LaTeX 표시
 
 # 각도 버튼 생성
 cols = st.columns(6) # 6개의 열로 버튼 정렬
 
 current_col_idx = 0
 for deg_val in angles_deg_values:
-    rad_val = np.deg2rad(deg_val)
-
-    if angle_unit == "도 (Degrees)":
-        button_label = rf"${deg_val}^\circ$"
+    with cols[current_col_idx]:
+        if angle_unit == "도 (Degrees)":
+            button_label = rf"${deg_val}^\circ$"
+            button_rad_value = np.deg2rad(deg_val)
+            button_latex_display = rf"{deg_val}^\circ"
+        else: # 라디안 선택 시
+            rad_val = np.deg2rad(deg_val)
+            button_label = rf"${get_latex_rad_display(rad_val)}$" # 버튼에 LaTeX 표시
+            button_rad_value = rad_val
+            button_latex_display = get_latex_rad_display(rad_val)
+        
         # 버튼을 누르면 세션 상태 업데이트
         if st.button(button_label, key=f"angle_{deg_val}_{angle_unit}"):
-            st.session_state.selected_angle_rad = rad_val
-            st.session_state.deg_for_display = deg_val
-            st.session_state.rad_for_display_latex = get_latex_rad_display(rad_val)
-            st.session_state.current_selected_unit = angle_unit
-    else: # 라디안 선택 시
-        button_label = rf"${get_latex_rad_display(rad_val)}$"
-        # 버튼을 누르면 세션 상태 업데이트
-        if st.button(button_label, key=f"angle_{deg_val}_{angle_unit}"):
-            st.session_state.selected_angle_rad = rad_val
-            st.session_state.deg_for_display = deg_val
-            st.session_state.rad_for_display_latex = get_latex_rad_display(rad_val)
-            st.session_state.current_selected_unit = angle_unit
+            st.session_state.selected_angle_rad = button_rad_value
+            st.session_state.display_angle_latex = button_latex_display
     
     current_col_idx = (current_col_idx + 1) % 6 # 다음 열로 이동
 
@@ -144,22 +142,15 @@ st.header("계산 결과")
 trig_value = get_trig_value(selected_func, st.session_state.selected_angle_rad)
 formatted_trig_value_latex = format_value_latex(trig_value)
 
-# 결과 출력
-st.markdown(f"선택한 삼각함수: **{selected_func}**")
+# 결과 출력 - st.latex 사용
+st.markdown(f"선택한 삼각함수: **{selected_func.upper()}**")
 
-# 선택된 각도와 반대 단위의 각도 표시
 st.markdown(f"선택된 각도: ")
-if st.session_state.current_selected_unit == "도 (Degrees)":
-    # 도를 선택했으므로 라디안으로 표시
-    st.latex(rf"\text{{입력 각도: }} {st.session_state.deg_for_display}^\circ \quad (\text{{라디안: }} {st.session_state.rad_for_display_latex})")
-else:
-    # 라디안을 선택했으므로 도로 표시
-    st.latex(rf"\text{{입력 각도: }} {st.session_state.rad_for_display_latex} \quad (\text{{도: }} {st.session_state.deg_for_display}^\circ)")
-
+st.latex(st.session_state.display_angle_latex)
 
 st.markdown(f"") # 간격 조절
 st.markdown("결과:")
-st.latex(rf"\text{{{selected_func}}}({get_latex_rad_display(st.session_state.selected_angle_rad)}) = {formatted_trig_value_latex}") # 함수 인자에는 라디안 LaTeX 사용
+st.latex(rf"\text{{{selected_func.upper()}}}({st.session_state.display_angle_latex}) = {formatted_trig_value_latex}")
 
 st.markdown("---")
 st.markdown("궁금한 삼각함수 값을 선택하고 각도를 변경하여 확인해보세요!")
