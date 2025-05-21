@@ -21,38 +21,38 @@ def format_value_latex(value):
     
     # 0, 1, -1, 0.5, -0.5와 같은 정수/반정수는 정확히 표시
     if np.isclose(value, 0):
-        return "$0$"
+        return r"$0$"
     elif np.isclose(value, 1):
-        return "$1$"
+        return r"$1$"
     elif np.isclose(value, -1):
-        return "$-1$"
+        return r"$-1$"
     elif np.isclose(value, 0.5):
-        return "$\\frac{1}{2}$"
+        return r"$\frac{1}{2}$"
     elif np.isclose(value, -0.5):
-        return "$-\\frac{1}{2}$"
+        return r"$-\frac{1}{2}$"
     elif np.isclose(value, np.sqrt(2)/2):
-        return "$\\frac{\\sqrt{2}}{2}$"
+        return r"$\frac{\sqrt{2}}{2}$"
     elif np.isclose(value, -np.sqrt(2)/2):
-        return "$-\\frac{\\sqrt{2}}{2}$"
+        return r"$-\frac{\sqrt{2}}{2}$"
     elif np.isclose(value, np.sqrt(3)/2):
-        return "$\\frac{\\sqrt{3}}{2}$"
+        return r"$\frac{\sqrt{3}}{2}$"
     elif np.isclose(value, -np.sqrt(3)/2):
-        return "$-\\frac{\\sqrt{3}}{2}$"
+        return r"$-\frac{\sqrt{3}}{2}$"
     elif np.isclose(value, np.sqrt(3)):
-        return "$\\sqrt{3}$"
+        return r"$\sqrt{3}$"
     elif np.isclose(value, -np.sqrt(3)):
-        return "$-\\sqrt{3}$"
+        return r"$-\sqrt{3}$"
     elif np.isclose(value, 1/np.sqrt(3)):
-        return "$\\frac{\\sqrt{3}}{3}$" # 유리화
+        return r"$\frac{\sqrt{3}}{3}$" # 유리화
     elif np.isclose(value, -1/np.sqrt(3)):
-        return "$-\\frac{\\sqrt{3}}{3}$" # 유리화
+        return r"$-\frac{\sqrt{3}}{3}$" # 유리화
     elif np.isclose(value, np.sqrt(2)):
-        return "$\\sqrt{2}$"
+        return r"$\sqrt{2}$"
     elif np.isclose(value, -np.sqrt(2)):
-        return "$-\\sqrt{2}$"
+        return r"$-\sqrt{2}$"
     
     # 그 외의 값은 소수점 4째 자리까지 표시
-    return f"${value:.4f}$"
+    return rf"${value:.4f}$"
 
 st.set_page_config(layout="centered")
 
@@ -103,7 +103,7 @@ if angle_unit == "도 (Degrees)":
         index=angles_deg.index(30) if 30 in angles_deg else 0
     )
     angle_rad = np.deg2rad(selected_angle_deg)
-    display_angle = f"${selected_angle_deg}°$"
+    display_angle = rf"${selected_angle_deg}°$" # raw string 추가
 else: # 라디안 선택 시
     angles_rad_display = []
     angle_to_rad = {} # 라디안 값에 해당하는 표시 문자열 매핑
@@ -112,43 +112,43 @@ else: # 라디안 선택 시
     for angle_d in angles_deg:
         rad_val = np.deg2rad(angle_d)
         
-        # 특수 라디안 값에 대한 LaTeX 표현
+        # 특수 라디안 값에 대한 LaTeX 표현 (r 접두사 추가)
         if np.isclose(rad_val, 0):
-            display_str = "$0$"
+            display_str = r"$0$"
         elif np.isclose(rad_val, np.pi/6):
-            display_str = "$\\frac{\\pi}{6}$"
+            display_str = r"$\frac{\pi}{6}$"
         elif np.isclose(rad_val, np.pi/4):
-            display_str = "$\\frac{\\pi}{4}$"
+            display_str = r"$\frac{\pi}{4}$"
         elif np.isclose(rad_val, np.pi/3):
-            display_str = "$\\frac{\\pi}{3}$"
+            display_str = r"$\frac{\pi}{3}$"
         elif np.isclose(rad_val, np.pi/2):
-            display_str = "$\\frac{\\pi}{2}$"
+            display_str = r"$\frac{\pi}{2}$"
         elif np.isclose(rad_val, 2*np.pi/3):
-            display_str = "$\\frac{2\\pi}{3}$"
+            display_str = r"$\frac{2\pi}{3}$"
         elif np.isclose(rad_val, 3*np.pi/4):
-            display_str = "$\\frac{3\\pi}{4}$"
+            display_str = r"$\frac{3\pi}{4}$"
         elif np.isclose(rad_val, 5*np.pi/6):
-            display_str = "$\\frac{5\\pi}{6}$"
+            display_str = r"$\frac{5\pi}{6}$"
         elif np.isclose(rad_val, np.pi):
-            display_str = "$\\pi$"
+            display_str = r"$\pi$"
         elif np.isclose(rad_val, 7*np.pi/6):
-            display_str = "$\\frac{7\\pi}{6}$"
+            display_str = r"$\frac{7\pi}{6}$"
         elif np.isclose(rad_val, 5*np.pi/4):
-            display_str = "$\\frac{5\\pi}{4}$"
+            display_str = r"$\frac{5\pi}{4}$"
         elif np.isclose(rad_val, 4*np.pi/3):
-            display_str = "$\\frac{4\\pi}{3}$"
+            display_str = r"$\frac{4\pi}{3}$"
         elif np.isclose(rad_val, 3*np.pi/2):
-            display_str = "$\\frac{3\\pi}{2}$"
+            display_str = r"$\frac{3\pi}{2}$"
         elif np.isclose(rad_val, 5*np.pi/3):
-            display_str = "$\\frac{5\\pi}{3}$"
+            display_str = r"$\frac{5\pi}{3}$"
         elif np.isclose(rad_val, 7*np.pi/4):
-            display_str = "$\\frac{7\\pi}{4}$"
+            display_str = r"$\frac{7\pi}{4}$"
         elif np.isclose(rad_val, 11*np.pi/6):
-            display_str = "$\\frac{11\\pi}{6}$"
+            display_str = r"$\frac{11\pi}{6}$"
         elif np.isclose(rad_val, 2*np.pi):
-            display_str = "$2\\pi$"
+            display_str = r"$2\pi$"
         else:
-            display_str = f"${rad_val:.4f} \\text{ rad}$" # 그 외의 경우 소수점 표시
+            display_str = rf"${rad_val:.4f} \text{{ rad}}$" # 그 외의 경우 소수점 표시에도 raw string
 
         angles_rad_display.append(display_str)
         angle_to_rad[display_str] = rad_val
@@ -156,7 +156,7 @@ else: # 라디안 선택 시
     selected_angle_rad_display = st.sidebar.selectbox(
         "각도를 선택하세요 (라디안):",
         angles_rad_display,
-        index=angles_rad_display.index("$\\frac{\\pi}{6}$") if "$\\frac{\\pi}{6}$" in angles_rad_display else 0
+        index=angles_rad_display.index(r"$\frac{\pi}{6}$") if r"$\frac{\pi}{6}$" in angles_rad_display else 0
     )
     angle_rad = angle_to_rad[selected_angle_rad_display]
     display_angle = selected_angle_rad_display
@@ -170,10 +170,10 @@ trig_value = get_trig_value(selected_func, angle_rad)
 formatted_trig_value = format_value_latex(trig_value)
 
 # 결과 출력
-st.markdown(f"선택한 삼각함수: $\\large\\text{{{selected_func.upper()}}}$")
-st.markdown(f"선택한 각도: $\\large{display_angle}$")
+st.markdown(rf"선택한 삼각함수: $\large\text{{{selected_func.upper()}}}$") # 여기도 raw string
+st.markdown(rf"선택한 각도: $\large{display_angle}$") # 여기도 raw string
 st.markdown(f"") # 간격 조절
-st.markdown(f"결과: $\\huge\\text{{{selected_func.upper()}}}(\\large{display_angle}) = {formatted_trig_value}$")
+st.markdown(rf"결과: $\huge\text{{{selected_func.upper()}}}(\large{display_angle}) = {formatted_trig_value}$") # 여기도 raw string
 
 st.markdown("---")
 st.markdown("궁금한 삼각함수 값을 선택하고 각도를 변경하여 확인해보세요!")
